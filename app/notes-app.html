@@ -156,7 +156,6 @@ Polymer({
     this.$.doc.reset().then(function () {
       this.set('item', {
         title: '',
-        uid: this.get('user.uid'),
         createdAt: firebase.database.ServerValue.TIMESTAMP
       })
 
