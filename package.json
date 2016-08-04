@@ -1,0 +1,16 @@
+{
+  "name": "notes-app",
+  "version": "1.0.0",
+  "description": "A super-simple notes app",
+  "main": "app/index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alf Eaton <eaton.alf@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "polylint": "^2.10.1",
+    "standard": "^7.1.2",
+    "vulcanize": "^1.14.8"
+  }
+}

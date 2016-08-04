@@ -1,0 +1,207 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="bower_components/moment-element/moment-element.html">
+<link rel="import" href="bower_components/marked-element/marked-element.html">
+<link rel="import" href="bower_components/app-layout/app-layout.html">
+<link rel="import" href="bower_components/paper-card/paper-card.html">
+<link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+<link rel="import" href="bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
+
+<dom-module id="notes-app">
+<template>
+  <style>
+  :host {
+    display: block;
+    color: #21372c;
+    font-family: sans-serif;
+  }
+
+  paper-dialog {
+    position: fixed;
+    top: 70px;
+    left: 1%;
+    right: 1%;
+    padding: 10px;
+  }
+
+  paper-card {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .collection {
+    margin: 0 1rem;
+  }
+
+  paper-fab {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+  }
+
+  moment-element {
+    color: #777;
+    font-size: 90%;
+  }
+  </style>
+
+  <firebase-app
+    api-key="AIzaSyCG4uUP4IOnQ6ZD6VwcjCVRfeynweEeQi0"
+    auth-domain="notes-app-149cc.firebaseapp.com"
+    database-url="https://notes-app-149cc.firebaseio.com"></firebase-app>
+
+  <firebase-auth id="auth"
+    provider="google"
+    user="{{user}}"
+    signed-in="{{signedIn}}"></firebase-auth>
+
+  <!-- collection data -->
+  <firebase-query id="query"
+    path="[[collectionPath]]"
+    data="{{items}}"></firebase-query>
+
+  <!-- item data -->
+  <firebase-document id="doc" data="{{item}}"></firebase-document>
+
+  <app-header-layout>
+    <!-- header -->
+    <app-header>
+      <app-toolbar>
+        <div main-title>Notes</div>
+
+        <!-- auth -->
+        <paper-button on-tap="signIn" hidden$="[[signedIn]]">Sign in with Google</paper-button>
+        <paper-button on-tap="signOut" hidden$="[[!signedIn]]">Sign out</paper-button>
+      </app-toolbar>
+    </app-header>
+
+    <!-- items -->
+    <div class="collection">
+      <template is="dom-repeat" items="[[items]]" sort="_sort">
+        <paper-card heading="[[_title(item.title)]]">
+          <div class="card-content">
+            <marked-element markdown="[[item.body]]">
+              <div class="markdown-html"></div>
+            </marked-element>
+
+            <div>
+              <moment-element class="item-date" from="now" datetime="[[item.createdAt]]"></moment-element>
+            </div>
+          </div>
+
+          <!-- actions -->
+          <div class="card-actions">
+            <paper-icon-button on-tap="edit" icon="create"></paper-icon-button>
+            <paper-icon-button on-tap="delete" icon="delete"></paper-icon-button>
+          </div>
+        </paper-card>
+      </template>
+    </div>
+
+    <paper-fab on-tap="add" icon="add" hidden$="[[!signedIn]]"></paper-fab>
+
+    <!-- editor -->
+    <paper-dialog id="editor">
+      <paper-input id="title" value="[[item.title]]" label="Title" autofocus></paper-input>
+
+      <paper-dialog-scrollable>
+        <paper-textarea id="body" value="[[item.body]]" label="Body"></paper-textarea>
+      </paper-dialog-scrollable>
+
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="save">Save</paper-button>
+      </div>
+    </paper-dialog>
+  </app-header-layout>
+</template>
+
+<script>
+Polymer({
+  is: 'notes-app',
+
+  properties: {
+    signedIn: {
+      type: Boolean,
+      value: false,
+    },
+    user: {
+      type: Object,
+      observer: '_userChanged',
+    },
+    items: Object,
+    item: Object,
+    collectionPath: String,
+  },
+
+  signIn: function () {
+    this.$.auth.signInWithPopup()
+  },
+
+  signOut: function () {
+    this.$.auth.signOut()
+  },
+
+  _userChanged: function (user) {
+    this.set('collectionPath', user ? '/notes/' + user.uid : null)
+  },
+
+  add: function () {
+    this.$.doc.reset().then(function () {
+      this.set('item', {
+        title: '',
+        uid: this.get('user.uid'),
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      })
+
+      this.$.editor.open()
+      this.$.doc.save(this.get('collectionPath'))
+    }.bind(this))
+  },
+
+  edit: function (event) {
+    var item = event.model.item
+
+    this.$.doc.reset().then(function () {
+      this.$.doc.path = this.get('collectionPath') + '/' + item.$key
+
+      this.async(function() {
+        this.$.editor.open()
+      })
+    }.bind(this))
+  },
+
+  save: function (event) {
+    this.set('item.title', this.$.title.value)
+    this.set('item.body', this.$.body.value)
+
+    this.$.editor.close()
+  },
+
+  delete: function (event) {
+    var item = event.model.item
+
+    if (!confirm('Delete ' + (item.title ? '"' + item.title + '"' : 'this item') + '?')) return
+
+    this.$.doc.reset().then(function() {
+      this.$.doc.path = this.get('collectionPath') + '/' + item.$key
+      this.$.doc.destroy()
+    }.bind(this))
+  },
+
+  _title: function (title) {
+    return title || 'Untitled'
+  },
+
+  _sort: function (a, b) {
+    return b.createdAt - a.createdAt
+  }
+})
+</script>
+</dom-module>
