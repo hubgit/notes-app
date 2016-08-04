@@ -6,8 +6,8 @@ clean:
 	rm -rf build
 
 lint:
-#	-node_modules/polylint/bin/polylint.js --root app/ --input notes-app.html
-#	node_modules/standard/bin/cmd.js
+	-node_modules/polylint/bin/polylint.js --root app/ --input notes-app.html
+	node_modules/standard/bin/cmd.js
 
 build: clean lint
 	cp -r app build
