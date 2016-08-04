@@ -18,3 +18,7 @@ deploy: build
 
 serve:
 	firebase serve
+
+install:
+	npm install
+	bower install
