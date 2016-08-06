@@ -13,34 +13,11 @@
 <!-- import app element -->
 <link rel="import" href="app.html">
 
-<!-- schema.org -->
-<script type="application/ld+json">
-{
-  "@context": "http://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "Notes"
-}
-</script>
-
-<style>
-#loader { position: absolute; top: 50%; left: 50%; margin-right: -50%; transform: translate(-50%, -50%) }
-</style>
-
 <!-- body -->
 <body>
-
-<!-- loading -->
-<div id="loader"><span>Loading…</span></div>
 
 <!-- app element -->
 <notes-app></notes-app>
 
 <!-- noscript -->
 <noscript>Please enable JavaScript to use this app</noscript>
-
-<!-- ready -->
-<script>
-  window.addEventListener('WebComponentsReady', function(e) {
-   document.querySelector('#loader').remove()
-  });
-</script>
