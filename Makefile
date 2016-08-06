@@ -20,8 +20,8 @@ deploy: build lint
 	firebase deploy --public build
 
 serve:
-	firebase serve
 	open http://localhost:5000/
+	firebase serve
 
 install:
 	npm install
