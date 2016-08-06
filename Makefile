@@ -23,6 +23,10 @@ serve:
 	firebase serve
 	open http://localhost:5000/
 
+install:
+	npm install
+	bower install
+
 dist-clean: clean
 	rm -rf node_modules
 	rm -rf app/bower_components
