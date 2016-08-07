@@ -49,6 +49,22 @@
     color: #777;
     font-size: 90%;
   }
+
+  #login {
+    width: 191px;
+    height: 46px;
+    background-image: url(sign-in.png);
+    background-repeat: no-repeat;
+    background-position: -5px -61px;
+  }
+
+  #login:hover {
+    background-position: -5px -5px;
+  }
+
+  #login:active {
+    background-position: -5px -117px;
+  }
   </style>
 
   <firebase-app
@@ -76,8 +92,8 @@
         <div main-title>Notes</div>
 
         <!-- auth -->
-        <paper-button on-tap="signIn" hidden$="[[signedIn]]">Sign in with Google</paper-button>
-        <paper-button on-tap="signOut" hidden$="[[!signedIn]]">Sign out</paper-button>
+        <paper-button on-tap="signIn" hidden$="[[signedIn]]" id="login"></paper-button>
+        <paper-icon-button on-tap="signOut" hidden$="[[!signedIn]]" icon="exit-to-app"></paper-icon-button>
       </app-toolbar>
     </app-header>
 
