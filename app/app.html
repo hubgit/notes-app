@@ -121,9 +121,9 @@
           <paper-textarea id="body" value="[[item.body]]" label="Body" tabindex="1"></paper-textarea>
         </div>
 
-        <div class="card-actions layout horizontal justified">
+        <div class="card-actions layout horizontal end-justified">
+          <paper-button on-tap="closeEditor" tabindex="-1">Cancel</paper-button>
           <paper-button on-tap="save">Save</paper-button>
-          <paper-button on-tap="closeEditor">Cancel</paper-button>
         </div>
       </form>
     </paper-card>
@@ -145,9 +145,9 @@
           </div>
 
           <!-- actions -->
-          <div class="card-actions layout horizontal justified">
-            <paper-icon-button on-tap="edit" icon="create"></paper-icon-button>
+          <div class="card-actions layout horizontal end-justified">
             <paper-icon-button on-tap="confirmDelete" icon="delete"></paper-icon-button>
+            <paper-icon-button on-tap="edit" icon="create"></paper-icon-button>
           </div>
         </paper-card>
       </template>
