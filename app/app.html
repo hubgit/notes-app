@@ -26,11 +26,6 @@
     margin-bottom: 1rem;
   }
 
-  paper-card .card-content {
-    padding: 0;
-    margin: 16px;
-  }
-
   paper-fab {
     position: fixed;
     bottom: 2rem;
@@ -72,8 +67,13 @@
   }
 
   #delete-title p {
-    font-variant: italic;
+    font-style: italic;
     display: inline;
+  }
+
+  .item-content {
+    padding: 0;
+    margin: 16px;
   }
   </style>
 
@@ -110,8 +110,8 @@
     <!-- editor -->
     <paper-card id="editor" hidden$="[[!editing]]">
         <div class="card-content">
-          <paper-input id="title" value="[[item.title]]" label="Title" autofocus></paper-input>
-          <paper-textarea id="body" value="[[item.body]]" label="Body"></paper-textarea>
+          <paper-input id="title" value="[[item.title]]" label="Title" tabindex="0"></paper-input>
+          <paper-textarea id="body" value="[[item.body]]" label="Body" tabindex="1"></paper-textarea>
         </div>
 
         <div class="card-actions">
@@ -126,14 +126,14 @@
       <template is="dom-repeat" items="[[items]]" sort="_sort">
         <paper-card heading="[[item.title]]">
           <!-- body -->
-          <div class="card-content">
+          <div class="card-content item-content">
             <marked-element markdown="[[item.body]]">
               <div class="markdown-html"></div>
             </marked-element>
           </div>
 
           <!-- date -->
-          <div class="card-content">
+          <div class="card-content item-content">
             <moment-element class="item-date" from="now" datetime="[[item.createdAt]]"></moment-element>
           </div>
 
@@ -151,7 +151,7 @@
     <!-- delete -->
     <paper-dialog id="delete">
       <h2>Delete a note</h2>
-      <p>Are you sure you want to delete "<marked-element markdown="[[deleting.title]]" id="delete-title"><span class="markdown-html"></span></marked-element>"?</p>
+      <p>Are you sure you want to delete <marked-element markdown="[[deleting.title]]" id="delete-title"><span class="markdown-html"></span></marked-element>?</p>
       <div class="buttons">
         <paper-button dialog-dismiss autofocus>Cancel</paper-button>
         <paper-button dialog-confirm on-tap="delete">Delete</paper-button>
@@ -199,12 +199,11 @@ Polymer({
     this.$.doc.reset().then(function () {
       this.set('item', {
         title: '',
+        body: '',
         createdAt: firebase.database.ServerValue.TIMESTAMP
       })
 
-      this.set('editing', true)
-      this.$.title.focus()
-      this.$.doc.save(this.get('collectionPath'))
+      this.showEditor()
     }.bind(this))
   },
 
@@ -213,18 +212,24 @@ Polymer({
 
     this.$.doc.reset().then(function () {
       this.$.doc.path = this.get('collectionPath') + '/' + item.$key
-
-      this.async(function() {
-        this.set('editing', true)
-        this.$.title.focus()
-      })
+      this.async(this.showEditor)
     }.bind(this))
   },
 
   save: function (event) {
+    if (this.$.doc.isNew) {
+      this.update()
+      this.$.doc.save(this.get('collectionPath'))
+    } else {
+      this.update()
+    }
+
+    this.set('editing', false)
+  },
+
+  update: function () {
     this.set('item.title', this.$.title.value)
     this.set('item.body', this.$.body.value)
-    this.set('editing', false)
   },
 
   cancel: function () {
@@ -238,6 +243,16 @@ Polymer({
       this.$.doc.path = this.get('collectionPath') + '/' + item.$key
       this.$.doc.destroy()
     }.bind(this))
+  },
+
+  showEditor: function () {
+    this.set('editing', true)
+
+    if (this.get('item.title')) {
+      this.$.body.focus()
+    } else {
+      this.$.title.focus()
+    }
   },
 
   confirmDelete: function (event) {
