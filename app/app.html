@@ -131,7 +131,7 @@
     <!-- items -->
     <div id="items">
       <template is="dom-repeat" items="[[items]]" sort="_sort">
-        <paper-card heading="[[item.title]]" on-tap="edit">
+        <paper-card heading="[[item.title]]">
           <!-- body -->
           <div class="card-content item-content">
             <marked-element markdown="[[item.body]]">
