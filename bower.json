@@ -6,7 +6,7 @@
   "description": "A super-simple notes app",
   "main": "app/index.html",
   "license": "MIT",
-  "homepage": "https://github.com/hubgit/polymerfire-todo",
+  "homepage": "https://github.com/hubgit/notes-app",
   "private": true,
   "ignore": [
     "**/.*",
