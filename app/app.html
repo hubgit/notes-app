@@ -221,10 +221,8 @@ Polymer({
   },
 
   edit: function (event) {
-    var item = event.model.item
-
     this.$.doc.reset().then(function () {
-      this.$.doc.path = this.get('collectionPath') + '/' + item.$key
+      this.$.doc.path = this.get('collectionPath') + '/' + event.model.item.$key
       this.async(this.openEditor)
     }.bind(this))
   },
