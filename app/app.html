@@ -3,6 +3,7 @@
 <link rel="import" href="bower_components/moment-element/moment-element.html">
 <link rel="import" href="bower_components/marked-element/marked-element.html">
 <link rel="import" href="bower_components/app-layout/app-layout.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="bower_components/paper-card/paper-card.html">
 <link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="bower_components/paper-input/paper-input.html">
@@ -10,7 +11,6 @@
 <link rel="import" href="bower_components/paper-button/paper-button.html">
 <link rel="import" href="bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="bower_components/iron-icons/iron-icons.html">
 
 <dom-module id="notes-app">
 <template>
@@ -26,6 +26,11 @@
     margin-bottom: 1rem;
   }
 
+  paper-card .card-content {
+    padding: 0;
+    margin: 16px;
+  }
+
   paper-fab {
     position: fixed;
     bottom: 2rem;
@@ -35,6 +40,14 @@
   moment-element {
     color: #777;
     font-size: 90%;
+  }
+
+  marked-element p:first-of-type {
+    margin-top: 0;
+  }
+
+  marked-element p:last-of-type {
+    margin-bottom: 0;
   }
 
   #editor, #items {
@@ -112,20 +125,22 @@
     <div id="items">
       <template is="dom-repeat" items="[[items]]" sort="_sort">
         <paper-card heading="[[item.title]]">
+          <!-- body -->
           <div class="card-content">
             <marked-element markdown="[[item.body]]">
               <div class="markdown-html"></div>
             </marked-element>
+          </div>
 
-            <div>
-              <moment-element class="item-date" from="now" datetime="[[item.createdAt]]"></moment-element>
-            </div>
+          <!-- date -->
+          <div class="card-content">
+            <moment-element class="item-date" from="now" datetime="[[item.createdAt]]"></moment-element>
           </div>
 
           <!-- actions -->
           <div class="card-actions">
             <paper-icon-button on-tap="edit" icon="create"></paper-icon-button>
-            <paper-icon-button on-tap="delete" icon="delete"></paper-icon-button>
+            <paper-icon-button on-tap="confirmDelete" icon="delete"></paper-icon-button>
           </div>
         </paper-card>
       </template>
@@ -139,7 +154,7 @@
       <p>Are you sure you want to delete "<marked-element markdown="[[deleting.title]]" id="delete-title"><span class="markdown-html"></span></marked-element>"?</p>
       <div class="buttons">
         <paper-button dialog-dismiss autofocus>Cancel</paper-button>
-        <paper-button dialog-confirm on-tap="_delete">Delete</paper-button>
+        <paper-button dialog-confirm on-tap="delete">Delete</paper-button>
       </div>
     </paper-dialog>
   </app-header-layout>
@@ -217,17 +232,17 @@ Polymer({
   },
 
   delete: function (event) {
-    this.set('deleting', event.model.item)
-    this.$.delete.open()
-  },
-
-  _delete: function (event) {
     var item = this.get('deleting')
 
     this.$.doc.reset().then(function() {
       this.$.doc.path = this.get('collectionPath') + '/' + item.$key
       this.$.doc.destroy()
     }.bind(this))
+  },
+
+  confirmDelete: function (event) {
+    this.set('deleting', event.model.item)
+    this.$.delete.open()
   },
 
   _sort: function (a, b) {
