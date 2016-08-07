@@ -1,4 +1,4 @@
-.PHONY: clean lint build deploy serve dist-clean
+.PHONY: clean lint build deploy serve dist-clean install
 
 all: build lint
 
