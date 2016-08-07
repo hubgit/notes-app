@@ -117,13 +117,12 @@
         <iron-a11y-keys id="cancel" keys="esc" on-keys-pressed="closeEditor"></iron-a11y-keys>
 
         <div class="card-content">
-          <paper-input id="title" value="[[item.title]]" label="Title" tabindex="0"></paper-input>
-          <paper-textarea id="body" value="[[item.body]]" label="Body" tabindex="1"></paper-textarea>
+          <paper-input id="title" value="{{item.title}}" label="Title" tabindex="0"></paper-input>
+          <paper-textarea id="body" value="{{item.body}}" label="Body" tabindex="1"></paper-textarea>
         </div>
 
         <div class="card-actions layout horizontal end-justified">
-          <paper-button on-tap="closeEditor" tabindex="-1">Cancel</paper-button>
-          <paper-button on-tap="save">Save</paper-button>
+          <paper-button on-tap="save">Done</paper-button>
         </div>
       </form>
     </paper-card>
@@ -228,9 +227,6 @@ Polymer({
   },
 
   save: function (event) {
-    this.set('item.title', this.$.title.value)
-    this.set('item.body', this.$.body.value)
-
     if (this.$.doc.isNew) {
       this.$.doc.save(this.get('collectionPath'))
     }
