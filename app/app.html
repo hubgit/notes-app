@@ -218,11 +218,10 @@ Polymer({
   },
 
   save: function (event) {
+    this.update()
+
     if (this.$.doc.isNew) {
-      this.update()
       this.$.doc.save(this.get('collectionPath'))
-    } else {
-      this.update()
     }
 
     this.set('editing', false)
