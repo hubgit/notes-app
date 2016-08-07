@@ -11,6 +11,7 @@
 <link rel="import" href="bower_components/paper-button/paper-button.html">
 <link rel="import" href="bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="bower_components/iron-a11y-keys/iron-a11y-keys.html">
 
 <dom-module id="notes-app">
 <template>
@@ -109,13 +110,15 @@
 
     <!-- editor -->
     <paper-card id="editor" hidden$="[[!editing]]">
+        <iron-a11y-keys id="submit" keys="enter" on-keys-pressed="save"></iron-a11y-keys>
+
         <div class="card-content">
           <paper-input id="title" value="[[item.title]]" label="Title" tabindex="0"></paper-input>
           <paper-textarea id="body" value="[[item.body]]" label="Body" tabindex="1"></paper-textarea>
         </div>
 
         <div class="card-actions">
-          <paper-button on-tap="cancel">Cancel</paper-button>
+          <paper-button on-tap="closeEditor">Cancel</paper-button>
           <paper-button on-tap="save">Save</paper-button>
         </div>
       </form>
@@ -184,6 +187,10 @@ Polymer({
     deleting: Object
   },
 
+  ready: function () {
+    this.$.submit.target = this.$.title
+  },
+
   signIn: function () {
     this.$.auth.signInWithPopup()
   },
@@ -204,7 +211,7 @@ Polymer({
         createdAt: firebase.database.ServerValue.TIMESTAMP
       })
 
-      this.showEditor()
+      this.async(this.openEditor)
     }.bind(this))
   },
 
@@ -213,27 +220,19 @@ Polymer({
 
     this.$.doc.reset().then(function () {
       this.$.doc.path = this.get('collectionPath') + '/' + item.$key
-      this.async(this.showEditor)
+      this.async(this.openEditor)
     }.bind(this))
   },
 
   save: function (event) {
-    this.update()
+    this.set('item.title', this.$.title.value)
+    this.set('item.body', this.$.body.value)
 
     if (this.$.doc.isNew) {
       this.$.doc.save(this.get('collectionPath'))
     }
 
-    this.set('editing', false)
-  },
-
-  update: function () {
-    this.set('item.title', this.$.title.value)
-    this.set('item.body', this.$.body.value)
-  },
-
-  cancel: function () {
-    this.set('editing', false)
+    this.closeEditor()
   },
 
   delete: function (event) {
@@ -245,9 +244,14 @@ Polymer({
     }.bind(this))
   },
 
-  showEditor: function () {
+  openEditor: function () {
     this.set('editing', true)
-    (this.get('item.title') ? this.$.body : this.$.title).focus()
+    var input = this.get('item.title') ? this.$.body : this.$.title
+    input.focus()
+  },
+
+  closeEditor: function () {
+    this.set('editing', false)
   },
 
   confirmDelete: function (event) {
