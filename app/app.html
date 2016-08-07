@@ -146,6 +146,7 @@
       </template>
     </div>
 
+    <!-- add -->
     <paper-fab on-tap="add" icon="add" hidden$="[[!signedIn]]"></paper-fab>
 
     <!-- delete -->
@@ -247,12 +248,7 @@ Polymer({
 
   showEditor: function () {
     this.set('editing', true)
-
-    if (this.get('item.title')) {
-      this.$.body.focus()
-    } else {
-      this.$.title.focus()
-    }
+    (this.get('item.title') ? this.$.body : this.$.title).focus()
   },
 
   confirmDelete: function (event) {
