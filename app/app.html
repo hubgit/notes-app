@@ -5,7 +5,6 @@
 <link rel="import" href="bower_components/app-layout/app-layout.html">
 <link rel="import" href="bower_components/paper-card/paper-card.html">
 <link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="bower_components/paper-input/paper-input.html">
 <link rel="import" href="bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="bower_components/paper-button/paper-button.html">
@@ -22,21 +21,9 @@
     font-family: sans-serif;
   }
 
-  paper-dialog {
-    position: fixed;
-    top: 70px;
-    left: 1%;
-    right: 1%;
-    padding: 10px;
-  }
-
   paper-card {
-    width: 100%;
+    display: block;
     margin-bottom: 1rem;
-  }
-
-  .collection {
-    margin: 0 1rem;
   }
 
   paper-fab {
@@ -48,6 +35,11 @@
   moment-element {
     color: #777;
     font-size: 90%;
+  }
+
+  #editor, #items {
+    margin-left: 1rem;
+    margin-right: 1rem;
   }
 
   #login {
@@ -64,6 +56,11 @@
 
   #login:active {
     background-position: -5px -117px;
+  }
+
+  #delete-title p {
+    font-variant: italic;
+    display: inline;
   }
   </style>
 
@@ -97,10 +94,24 @@
       </app-toolbar>
     </app-header>
 
+    <!-- editor -->
+    <paper-card id="editor" hidden$="[[!editing]]">
+        <div class="card-content">
+          <paper-input id="title" value="[[item.title]]" label="Title" autofocus></paper-input>
+          <paper-textarea id="body" value="[[item.body]]" label="Body"></paper-textarea>
+        </div>
+
+        <div class="card-actions">
+          <paper-button on-tap="cancel">Cancel</paper-button>
+          <paper-button on-tap="save">Save</paper-button>
+        </div>
+      </form>
+    </paper-card>
+
     <!-- items -->
-    <div class="collection">
+    <div id="items">
       <template is="dom-repeat" items="[[items]]" sort="_sort">
-        <paper-card heading="[[_title(item.title)]]">
+        <paper-card heading="[[item.title]]">
           <div class="card-content">
             <marked-element markdown="[[item.body]]">
               <div class="markdown-html"></div>
@@ -122,17 +133,13 @@
 
     <paper-fab on-tap="add" icon="add" hidden$="[[!signedIn]]"></paper-fab>
 
-    <!-- editor -->
-    <paper-dialog id="editor">
-      <paper-input id="title" value="[[item.title]]" label="Title" autofocus></paper-input>
-
-      <paper-dialog-scrollable>
-        <paper-textarea id="body" value="[[item.body]]" label="Body"></paper-textarea>
-      </paper-dialog-scrollable>
-
+    <!-- delete -->
+    <paper-dialog id="delete">
+      <h2>Delete a note</h2>
+      <p>Are you sure you want to delete "<marked-element markdown="[[deleting.title]]" id="delete-title"><span class="markdown-html"></span></marked-element>"?</p>
       <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="save">Save</paper-button>
+        <paper-button dialog-dismiss autofocus>Cancel</paper-button>
+        <paper-button dialog-confirm on-tap="_delete">Delete</paper-button>
       </div>
     </paper-dialog>
   </app-header-layout>
@@ -154,6 +161,11 @@ Polymer({
     items: Object,
     item: Object,
     collectionPath: String,
+    editing: {
+      type: Boolean,
+      value: false
+    },
+    deleting: Object
   },
 
   signIn: function () {
@@ -175,7 +187,8 @@ Polymer({
         createdAt: firebase.database.ServerValue.TIMESTAMP
       })
 
-      this.$.editor.open()
+      this.set('editing', true)
+      this.$.title.focus()
       this.$.doc.save(this.get('collectionPath'))
     }.bind(this))
   },
@@ -187,7 +200,8 @@ Polymer({
       this.$.doc.path = this.get('collectionPath') + '/' + item.$key
 
       this.async(function() {
-        this.$.editor.open()
+        this.set('editing', true)
+        this.$.title.focus()
       })
     }.bind(this))
   },
@@ -195,23 +209,25 @@ Polymer({
   save: function (event) {
     this.set('item.title', this.$.title.value)
     this.set('item.body', this.$.body.value)
+    this.set('editing', false)
+  },
 
-    this.$.editor.close()
+  cancel: function () {
+    this.set('editing', false)
   },
 
   delete: function (event) {
-    var item = event.model.item
+    this.set('deleting', event.model.item)
+    this.$.delete.open()
+  },
 
-    if (!confirm('Delete ' + (item.title ? '"' + item.title + '"' : 'this item') + '?')) return
+  _delete: function (event) {
+    var item = this.get('deleting')
 
     this.$.doc.reset().then(function() {
       this.$.doc.path = this.get('collectionPath') + '/' + item.$key
       this.$.doc.destroy()
     }.bind(this))
-  },
-
-  _title: function (title) {
-    return title || 'Untitled'
   },
 
   _sort: function (a, b) {
